@@ -12,15 +12,17 @@ Current production path:
 - default view-model binding through `RiveViewModelAdapter`
 - tested in repository workflows on macOS and Linux
 - software-backed rendering on macOS through the upstream CoreGraphics renderer
-- Linux builds currently use a no-op renderer backend, so package integration and example builds work there but raster output does not yet
+- software-backed rendering on Linux through the upstream Skia raster renderer
 - build-tree and install-tree CMake package exports
 - standalone consumer examples live outside this repository in `RiveQmlExamples`
 
 Current platform scope:
 
 - tested on macOS and Linux
-- current shipping raster renderer backend is the macOS CoreGraphics path
-- non-Apple builds currently load documents and expose the API surface, but they do not render frames yet
+- current shipping raster renderer backends are:
+  - macOS: CoreGraphics
+  - Linux: Skia raster
+- other non-Apple, non-Linux builds still fall back to a non-rendering path
 
 ## Public QML Types
 
@@ -62,9 +64,8 @@ Requirements:
 - Qt 6.8+
 - C++20 toolchain
 - `premake`
-- macOS for the current shipping raster renderer backend
-
-Linux builds currently validate package consumption and example integration, but they do not render frames yet.
+- `git`
+- `python3`
 
 Typical setup on Apple Silicon:
 
@@ -78,7 +79,19 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+Typical setup on Linux:
+
+```bash
+cmake -S . -B build -G Ninja \
+  -DCMAKE_PREFIX_PATH=/usr/lib/qt6
+
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
 `RiveQml` can either use a local `rive-runtime` checkout or fetch the pinned upstream revision during configure.
+
+On Linux, the first renderer-enabled build also fetches and builds the pinned Skia checkout used by the raster backend.
 
 Key options:
 

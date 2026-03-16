@@ -21,7 +21,7 @@ add_test(
     COMMAND RiveQmlRiveFileSmokeTest
 )
 
-if(APPLE)
+if(APPLE OR LINUX)
     qt_add_executable(RiveQmlRiveItemRenderTest
         unit/riveitem_render_test.cpp
     )

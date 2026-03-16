@@ -1,6 +1,6 @@
 # Development
 
-Repository workflows are validated on macOS and Linux. The current shipping renderer backend is still the macOS CoreGraphics path.
+Repository workflows are validated on macOS and Linux. Current shipping raster backends are CoreGraphics on macOS and Skia raster on Linux.
 
 ## Local Workflow
 
@@ -13,6 +13,8 @@ ctest --test-dir build --output-on-failure
 ```
 
 Use the matching Qt prefix for your platform, for example `/opt/homebrew/opt/qt` on macOS or `/usr/lib/qt6` on Linux.
+
+On Linux, the first renderer-enabled build also bootstraps the pinned Skia checkout and can take noticeably longer than incremental builds.
 
 If you already have a local runtime checkout:
 
@@ -44,4 +46,4 @@ At minimum, validate:
 
 The repository ships a smoke test for real file loading.
 
-When touching runtime integration or rendering, also rebuild the sibling `RiveQmlExamples` project and run the brightness-control example.
+When touching runtime integration or rendering, also rebuild the sibling `RiveQmlExamples` project, run the brightness-control example, and rerun the `RiveQmlRiveItemRenderTest` smoke coverage.

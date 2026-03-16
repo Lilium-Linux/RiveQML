@@ -10,7 +10,7 @@
 
 ## Longer Term
 
-- broader renderer backend support beyond the current macOS CoreGraphics path
+- broader renderer backend support beyond the current macOS CoreGraphics and Linux Skia raster paths
 - GPU-native Qt Quick integration
 - richer runtime event surfacing into QML
 - stronger performance profiling and frame-time telemetry

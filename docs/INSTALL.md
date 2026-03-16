@@ -1,6 +1,6 @@
 # Installation
 
-Repository workflows are validated on macOS and Linux. The current shipping renderer backend is still the macOS CoreGraphics path.
+Repository workflows are validated on macOS and Linux. Current shipping raster backends are CoreGraphics on macOS and Skia raster on Linux.
 
 ## Requirements
 
@@ -8,6 +8,8 @@ Repository workflows are validated on macOS and Linux. The current shipping rend
 - Qt 6.8+
 - a C++20 compiler
 - `premake`
+- `git`
+- `python3`
 
 ### Package Installation
 
@@ -37,6 +39,8 @@ _Adjust package names for your distribution as needed (e.g., use `dnf` for Fedor
 ## Runtime Dependency
 
 `RiveQml` builds against the official `rive-runtime` at the pinned revision declared in the project CMake files.
+
+On Linux, the renderer-enabled build also fetches the pinned Skia checkout used by the raster backend and builds `libskia.a` locally during the normal CMake build.
 
 You can provide the runtime in either of these ways:
 
@@ -69,6 +73,8 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
+
+The first Linux build may take significantly longer than subsequent builds because it bootstraps the pinned Skia dependency tree.
 
 Using a pre-existing local runtime checkout:
 

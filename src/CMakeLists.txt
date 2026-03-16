@@ -21,6 +21,10 @@ if(APPLE)
     list(APPEND RIVEQML_PRIVATE_SOURCES
         "${RIVEQML_RIVE_RUNTIME_DIR}/cg_renderer/src/cg_factory.cpp"
     )
+elseif(LINUX)
+    list(APPEND RIVEQML_PRIVATE_SOURCES
+        "${RIVEQML_RIVE_RUNTIME_DIR}/skia/renderer/src/skia_factory.cpp"
+    )
 else()
     list(APPEND RIVEQML_PRIVATE_SOURCES
         "${RIVEQML_RIVE_RUNTIME_DIR}/utils/no_op_factory.cpp"
@@ -54,6 +58,8 @@ target_compile_options(RiveQml PRIVATE -fno-rtti)
 
 if(APPLE)
     target_compile_definitions(RiveQml PRIVATE RIVEQML_USE_CG_RENDERER)
+elseif(LINUX)
+    target_compile_definitions(RiveQml PRIVATE RIVEQML_USE_SKIA_RENDERER)
 endif()
 
 target_include_directories(RiveQml
@@ -77,6 +83,8 @@ target_link_libraries(RiveQml
 
 if(APPLE)
     target_link_libraries(RiveQml PRIVATE "-framework ApplicationServices")
+elseif(LINUX)
+    target_link_libraries(RiveQml PRIVATE RiveRuntime::Skia)
 endif()
 
 set_target_properties(RiveQml PROPERTIES

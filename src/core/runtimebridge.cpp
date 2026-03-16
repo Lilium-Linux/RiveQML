@@ -15,6 +15,8 @@
 
 #if defined(RIVEQML_USE_CG_RENDERER)
 #include <cg_factory.hpp>
+#elif defined(RIVEQML_USE_SKIA_RENDERER)
+#include <skia_factory.hpp>
 #else
 #include <utils/no_op_factory.hpp>
 #endif
@@ -167,6 +169,8 @@ void RuntimeBridge::load()
     document->bytes = file.readAll();
 #if defined(RIVEQML_USE_CG_RENDERER)
     document->factory = std::make_shared<rive::CGFactory>();
+#elif defined(RIVEQML_USE_SKIA_RENDERER)
+    document->factory = std::make_shared<rive::SkiaFactory>();
 #else
     document->factory = std::make_shared<rive::NoOpFactory>();
 #endif

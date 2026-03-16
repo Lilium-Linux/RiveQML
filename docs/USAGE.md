@@ -121,6 +121,8 @@ Default external asset lookup is source-relative.
 
 ## Current Limitations
 
-- tested on macOS and Linux, but the current shipping renderer backend is the macOS CoreGraphics path
-- renderer backend is CoreGraphics-based, not GPU-native yet
+- tested on macOS and Linux
+- current raster backends are CoreGraphics on macOS and Skia raster on Linux
+- renderer integration is still software-raster based, not GPU-native yet
+- non-Apple, non-Linux builds still do not ship a real raster backend
 - view-model sync is currently write-to-runtime from QML; it is not a full two-way observer bridge

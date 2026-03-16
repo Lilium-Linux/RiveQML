@@ -37,14 +37,20 @@ This keeps playback state isolated even when multiple items point at the same `R
 
 ### Render Layer
 
-The current renderer path is:
+Current renderer paths are:
 
-1. upstream `CGFactory`
-2. upstream `CGRenderer`
-3. bitmap render into a `QImage`
-4. presentation through `QQuickPaintedItem`
+1. macOS:
+   - upstream `CGFactory`
+   - upstream `CGRenderer`
+   - bitmap render into a `QImage`
+   - presentation through `QQuickPaintedItem`
+2. Linux:
+   - upstream `SkiaFactory`
+   - upstream `SkiaRenderer`
+   - raster `SkSurface` backed directly by the `QImage` pixel buffer
+   - presentation through `QQuickPaintedItem`
 
-This was chosen to ship a real, supported render path quickly on macOS without keeping the old fake scenegraph backend alive.
+These paths were chosen to ship real, supported raster backends without keeping the old fake scenegraph backend alive.
 
 ## Why `QQuickPaintedItem`
 
@@ -54,10 +60,10 @@ The current shipped backend uses `QQuickPaintedItem` because it gives:
 
 - a real render path today
 - compatibility with standard Qt Quick usage
-- compatibility with `QQuickWidget`-style hosting on macOS without requiring Qt backend-specific GPU glue first
+- compatibility with `QQuickWidget`-style hosting on macOS and Linux without requiring Qt backend-specific GPU glue first
 
 ## Current Tradeoff
 
-The CoreGraphics path is a production implementation, but it is not the final performance target.
+The current CoreGraphics and Skia raster paths are production implementations, but they are not the final performance target.
 
 The long-term architecture still points toward native GPU backends once they are wired cleanly into Qt.

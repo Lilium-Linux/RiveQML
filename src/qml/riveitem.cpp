@@ -13,6 +13,13 @@
 #if defined(RIVEQML_USE_CG_RENDERER)
 #include <ApplicationServices/ApplicationServices.h>
 #include <cg_renderer.hpp>
+#elif defined(RIVEQML_USE_SKIA_RENDERER)
+#include <skia_renderer.hpp>
+
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkSurface.h"
 #endif
 
 #include <rive/animation/linear_animation_instance.hpp>
@@ -493,6 +500,44 @@ public:
 
         CGContextFlush(context);
         CGContextRelease(context);
+        return true;
+#elif defined(RIVEQML_USE_SKIA_RENDERER)
+        if (image->size() != pixelSize ||
+            image->format() != QImage::Format_RGBA8888_Premultiplied)
+        {
+            *image = QImage(pixelSize, QImage::Format_RGBA8888_Premultiplied);
+        }
+        image->setDevicePixelRatio(devicePixelRatio);
+        image->fill(Qt::transparent);
+
+        const SkImageInfo info = SkImageInfo::Make(pixelSize.width(),
+                                                   pixelSize.height(),
+                                                   kRGBA_8888_SkColorType,
+                                                   kPremul_SkAlphaType);
+        sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
+            info, image->bits(), static_cast<size_t>(image->bytesPerLine()));
+        if (surface == nullptr)
+        {
+            if (errorString != nullptr)
+            {
+                *errorString = QStringLiteral("Failed to create a Skia raster surface.");
+            }
+            return false;
+        }
+
+        SkCanvas* canvas = surface->getCanvas();
+        canvas->clear(SK_ColorTRANSPARENT);
+
+        rive::SkiaRenderer renderer(canvas);
+        renderer.save();
+        renderer.align(
+            toRiveFit(fitMode),
+            toRiveAlignment(alignmentMode),
+            rive::AABB{0.0f, 0.0f, static_cast<float>(pixelSize.width()), static_cast<float>(pixelSize.height())},
+            m_scene->bounds());
+        m_scene->draw(&renderer);
+        renderer.restore();
+        canvas->flush();
         return true;
 #else
         Q_UNUSED(image);

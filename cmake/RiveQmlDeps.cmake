@@ -1,9 +1,13 @@
 include(FetchContent)
 include(ExternalProject)
 
-if(NOT APPLE)
+if(LINUX)
     message(STATUS
-        "RiveQml is configuring without the macOS CoreGraphics renderer. "
+        "RiveQml is configuring with the Linux Skia raster renderer."
+    )
+elseif(NOT APPLE)
+    message(STATUS
+        "RiveQml is configuring without a raster renderer on this platform. "
         "Non-Apple builds support document loading and API validation, but not raster output yet."
     )
 endif()
@@ -12,6 +16,12 @@ set(RIVEQML_RIVE_RUNTIME_REVISION
     "1e9e2359126247da3434b73ed1ec49e139b779a2"
     CACHE STRING
     "Pinned rive-runtime revision."
+)
+
+set(RIVEQML_SKIA_REVISION
+    "chrome/m99"
+    CACHE STRING
+    "Pinned Skia revision used for Linux rendering."
 )
 
 set(RIVEQML_RIVE_RUNTIME_DIR
@@ -142,3 +152,41 @@ set_target_properties(RiveRuntime::Runtime PROPERTIES
     INTERFACE_LINK_LIBRARIES
         "${_rive_runtime_libs}"
 )
+
+if(LINUX)
+    set(_rive_skia_root "${RIVEQML_RIVE_RUNTIME_DIR}/skia/dependencies/skia")
+    if(NOT EXISTS "${_rive_skia_root}/include/core/SkCanvas.h")
+        FetchContent_Declare(
+            riveqml_skia
+            GIT_REPOSITORY https://github.com/google/skia.git
+            GIT_TAG ${RIVEQML_SKIA_REVISION}
+            SOURCE_DIR "${_rive_skia_root}"
+        )
+        FetchContent_Populate(riveqml_skia)
+    endif()
+
+    set(_rive_skia_root "${RIVEQML_RIVE_RUNTIME_DIR}/skia/dependencies/skia")
+    set(_rive_skia_out_dir "${_rive_skia_root}/out/riveqml-linux")
+    set(_rive_skia_lib "${_rive_skia_out_dir}/libskia.a")
+    set(_rive_skia_build_script "${CMAKE_CURRENT_LIST_DIR}/build_rive_skia_linux.sh")
+
+    add_custom_command(
+        OUTPUT "${_rive_skia_lib}"
+        COMMAND "${_rive_skia_build_script}" "${RIVEQML_RIVE_RUNTIME_DIR}"
+        DEPENDS
+            RiveRuntimeBuild
+            "${_rive_skia_build_script}"
+        VERBATIM
+    )
+
+    add_custom_target(RiveRuntimeSkiaBuild DEPENDS "${_rive_skia_lib}")
+
+    add_library(RiveRuntime::Skia INTERFACE IMPORTED GLOBAL)
+    add_dependencies(RiveRuntime::Skia RiveRuntimeSkiaBuild)
+    set_target_properties(RiveRuntime::Skia PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES
+            "${RIVEQML_RIVE_RUNTIME_DIR}/skia/renderer/include;${_rive_skia_root}"
+        INTERFACE_LINK_LIBRARIES
+            "${_rive_skia_lib};m;dl"
+    )
+endif()
