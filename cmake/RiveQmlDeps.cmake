@@ -2,7 +2,10 @@ include(FetchContent)
 include(ExternalProject)
 
 if(NOT APPLE)
-    message(FATAL_ERROR "RiveQml currently ships a macOS renderer backend only.")
+    message(STATUS
+        "RiveQml is configuring without the macOS CoreGraphics renderer. "
+        "Non-Apple builds support document loading and API validation, but not raster output yet."
+    )
 endif()
 
 set(RIVEQML_RIVE_RUNTIME_REVISION
@@ -70,11 +73,30 @@ set(_rive_runtime_libs
     "${_rive_runtime_out_dir}/libminiaudio.a"
     "${_rive_runtime_out_dir}/libluau_vm.a"
 )
+
+set(_rive_runtime_premake_args --with-pic)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND _rive_runtime_premake_args --no-lto)
+endif()
+
+string(JOIN " " _rive_runtime_premake_args_default ${_rive_runtime_premake_args})
+
+set(RIVEQML_RUNTIME_PREMAKE_ARGS
+    "${_rive_runtime_premake_args_default}"
+    CACHE STRING
+    "Arguments forwarded to the upstream rive-runtime premake invocation."
+)
+
+set(_rive_runtime_build_env
+    "RIVE_PREMAKE_ARGS=${RIVEQML_RUNTIME_PREMAKE_ARGS}"
+)
+
 set(_rive_runtime_build_command
     ${CMAKE_COMMAND} -E chdir
     "${RIVEQML_RIVE_RUNTIME_DIR}"
     ${CMAKE_COMMAND} -E env
-    RIVE_PREMAKE_ARGS=--with-pic
+    ${_rive_runtime_build_env}
     "${RIVEQML_RIVE_RUNTIME_DIR}/build/build_rive.sh"
     release
 )
@@ -104,9 +126,19 @@ endif()
 add_library(RiveRuntime::Runtime INTERFACE IMPORTED GLOBAL)
 add_dependencies(RiveRuntime::Runtime RiveRuntimeBuild)
 
+set(_rive_runtime_include_directories
+    "${RIVEQML_RIVE_RUNTIME_DIR}/include"
+)
+
+if(APPLE)
+    list(APPEND _rive_runtime_include_directories
+        "${RIVEQML_RIVE_RUNTIME_DIR}/cg_renderer/include"
+    )
+endif()
+
 set_target_properties(RiveRuntime::Runtime PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
-        "${RIVEQML_RIVE_RUNTIME_DIR}/include;${RIVEQML_RIVE_RUNTIME_DIR}/cg_renderer/include"
+        "${_rive_runtime_include_directories}"
     INTERFACE_LINK_LIBRARIES
         "${_rive_runtime_libs}"
 )

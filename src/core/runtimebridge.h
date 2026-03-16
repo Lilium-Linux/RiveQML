@@ -9,13 +9,13 @@
 
 #include <memory>
 
-#include <cg_factory.hpp>
+#include <rive/factory.hpp>
 #include <rive/file.hpp>
 
 struct RuntimeDocument
 {
     QByteArray bytes;
-    std::shared_ptr<rive::CGFactory> factory;
+    std::shared_ptr<rive::Factory> factory;
     rive::rcp<rive::File> file;
     QStringList artboards;
     QStringList animations;

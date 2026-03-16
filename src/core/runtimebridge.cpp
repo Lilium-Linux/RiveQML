@@ -13,6 +13,12 @@
 #include <rive/simple_array.hpp>
 #include <rive/span.hpp>
 
+#if defined(RIVEQML_USE_CG_RENDERER)
+#include <cg_factory.hpp>
+#else
+#include <utils/no_op_factory.hpp>
+#endif
+
 namespace
 {
 QString urlToFileOrQrcPath(const QUrl& url)
@@ -159,7 +165,11 @@ void RuntimeBridge::load()
 
     auto document = std::make_shared<RuntimeDocument>();
     document->bytes = file.readAll();
+#if defined(RIVEQML_USE_CG_RENDERER)
     document->factory = std::make_shared<rive::CGFactory>();
+#else
+    document->factory = std::make_shared<rive::NoOpFactory>();
+#endif
 
     const QString assetRoot = m_assetRoot.isEmpty() ? directoryPathFor(m_source)
                                                     : directoryPathFor(m_assetRoot);

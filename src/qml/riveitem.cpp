@@ -10,9 +10,11 @@
 #include <QPainter>
 #include <QQuickWindow>
 
+#if defined(RIVEQML_USE_CG_RENDERER)
 #include <ApplicationServices/ApplicationServices.h>
-
 #include <cg_renderer.hpp>
+#endif
+
 #include <rive/animation/linear_animation_instance.hpp>
 #include <rive/animation/state_machine_input_instance.hpp>
 #include <rive/animation/state_machine_instance.hpp>
@@ -92,6 +94,7 @@ QString selectedArtboardName(const RiveFile* document, const QString& requestedA
     return artboards.isEmpty() ? QString() : artboards.first();
 }
 
+#if defined(RIVEQML_USE_CG_RENDERER)
 class ScopedCGColorSpace
 {
 public:
@@ -109,6 +112,7 @@ public:
 private:
     CGColorSpaceRef m_space = nullptr;
 };
+#endif
 }
 
 class RiveRuntimeItemState
@@ -451,6 +455,7 @@ public:
             return false;
         }
 
+#if defined(RIVEQML_USE_CG_RENDERER)
         if (image->size() != pixelSize ||
             image->format() != QImage::Format_RGBA8888_Premultiplied)
         {
@@ -489,6 +494,20 @@ public:
         CGContextFlush(context);
         CGContextRelease(context);
         return true;
+#else
+        Q_UNUSED(image);
+        Q_UNUSED(pixelSize);
+        Q_UNUSED(devicePixelRatio);
+        Q_UNUSED(fitMode);
+        Q_UNUSED(alignmentMode);
+
+        if (errorString != nullptr)
+        {
+            *errorString = QStringLiteral(
+                "RiveQml was built without a raster renderer on this platform.");
+        }
+        return false;
+#endif
     }
 
     bool handlePointerPress(const QPointF& itemPoint,

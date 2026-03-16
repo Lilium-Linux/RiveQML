@@ -12,13 +12,15 @@ Current production path:
 - default view-model binding through `RiveViewModelAdapter`
 - tested in repository workflows on macOS and Linux
 - software-backed rendering on macOS through the upstream CoreGraphics renderer
+- Linux builds currently use a no-op renderer backend, so package integration and example builds work there but raster output does not yet
 - build-tree and install-tree CMake package exports
 - standalone consumer examples live outside this repository in `RiveQmlExamples`
 
 Current platform scope:
 
 - tested on macOS and Linux
-- current shipping renderer backend is the macOS CoreGraphics path
+- current shipping raster renderer backend is the macOS CoreGraphics path
+- non-Apple builds currently load documents and expose the API surface, but they do not render frames yet
 
 ## Public QML Types
 
@@ -60,7 +62,9 @@ Requirements:
 - Qt 6.8+
 - C++20 toolchain
 - `premake`
-- macOS for the current shipping renderer backend
+- macOS for the current shipping raster renderer backend
+
+Linux builds currently validate package consumption and example integration, but they do not render frames yet.
 
 Typical setup on Apple Silicon:
 

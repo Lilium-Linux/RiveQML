@@ -15,8 +15,17 @@ set(RIVEQML_PRIVATE_SOURCES
     core/runtimebridge.cpp
     qml/riveitem.cpp
     render/qt/qtgraphicsapi.cpp
-    "${RIVEQML_RIVE_RUNTIME_DIR}/cg_renderer/src/cg_factory.cpp"
 )
+
+if(APPLE)
+    list(APPEND RIVEQML_PRIVATE_SOURCES
+        "${RIVEQML_RIVE_RUNTIME_DIR}/cg_renderer/src/cg_factory.cpp"
+    )
+else()
+    list(APPEND RIVEQML_PRIVATE_SOURCES
+        "${RIVEQML_RIVE_RUNTIME_DIR}/utils/no_op_factory.cpp"
+    )
+endif()
 
 set(RIVEQML_PRIVATE_HEADERS
     core/runtimebridge.h
@@ -43,6 +52,10 @@ qt_add_qml_module(RiveQml
 target_compile_definitions(RiveQml PRIVATE RIVEQML_LIBRARY)
 target_compile_options(RiveQml PRIVATE -fno-rtti)
 
+if(APPLE)
+    target_compile_definitions(RiveQml PRIVATE RIVEQML_USE_CG_RENDERER)
+endif()
+
 target_include_directories(RiveQml
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>"
@@ -60,8 +73,11 @@ target_link_libraries(RiveQml
         Qt6::Quick
     PRIVATE
         RiveRuntime::Runtime
-        "-framework ApplicationServices"
 )
+
+if(APPLE)
+    target_link_libraries(RiveQml PRIVATE "-framework ApplicationServices")
+endif()
 
 set_target_properties(RiveQml PROPERTIES
     EXPORT_NAME RiveQml
